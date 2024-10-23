@@ -1,258 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Introspeak - Speech Accuracy Checker</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
-        
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-        }
-        
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        .card {
-            background-color: #1e1e1e;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .btn {
-            background-color: #1db954;
-            color: white;
-            font-weight: 600;
-            padding: 0.75rem 1.5rem;
-            border-radius: 50px;
-            transition: all 0.3s ease;
-        }
-        
-        .btn:hover {
-            background-color: #1ed760;
-            transform: scale(1.05);
-        }
-        
-        #passage-text {
-            font-size: 1.2rem;
-            line-height: 1.6;
-        }
-        
-        #history-list li {
-            background-color: #282828;
-            margin-bottom: 0.5rem;
-            padding: 0.75rem;
-            border-radius: 8px;
-        }
-        
-        select {
-            background-color: #282828;
-            color: white;
-            border: none;
-            padding: 0.5rem;
-            border-radius: 4px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Introspeak - Speech Accuracy Checker</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .card {
+      background-color: #1e1e1e;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .btn {
+      background-color: #1db954;
+      color: white;
+      font-weight: 600;
+      padding: 0.75rem 1.5rem;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+    }
+    .btn:hover {
+      background-color: #1ed760;
+      transform: scale(1.05);
+    }
+    .form-input {
+      background-color: #282828;
+      color: white;
+      padding: 0.75rem;
+      border-radius: 8px;
+      width: 100%;
+      margin-bottom: 1rem;
+      border: none;
+    }
+    .form-input:focus {
+      outline: none;
+      border: 2px solid #1db954;
+    }
+  </style>
 </head>
 <body class="min-h-screen flex items-center justify-center">
-    <div class="container">
-        <div class="card mb-8">
-            <h1 class="text-3xl font-bold mb-6 text-center">Introspeak</h1>
-            <div id="passage" class="mb-6 p-4 bg-gray-800 rounded-lg">
-                <p class="text-gray-400 mb-2">Read this passage aloud:</p>
-                <div id="passage-text" class="font-semibold"></div>
-            </div>
-            <button id="start" class="btn w-full mb-4">Start Speaking</button>
-            <div id="result" class="mt-4">
-                <p class="text-gray-400">Your speech accuracy:</p>
-                <p id="accuracy" class="text-2xl font-semibold text-green-500"></p>
-            </div>
-            <div id="mistakes" class="mt-4 text-red-500"></div>
-        </div>
-        
-        <div class="card mb-8">
-            <h2 class="text-xl font-semibold mb-4">History</h2>
-            <ul id="history-list" class="space-y-2"></ul>
-        </div>
-        
-        <div class="card">
-            <h2 class="text-xl font-semibold mb-4">Settings</h2>
-            <div class="flex items-center">
-                <label for="language" class="mr-4">Select Language:</label>
-                <select id="language" class="flex-grow">
-                    <option value="en-US">English (US)</option>
-                    <option value="es-ES">Spanish (ES)</option>
-                    <option value="fr-FR">French (FR)</option>
-                </select>
-            </div>
-        </div>
+  <div class="container">
+    <!-- Registration Form -->
+    <div id="register-container" class="card mb-8">
+      <h2 class="text-xl font-semibold mb-4">Register</h2>
+      <input type="text" id="register-email" class="form-input" placeholder="Enter email">
+      <input type="password" id="register-password" class="form-input" placeholder="Enter password">
+      <button id="register" class="btn w-full">Register</button>
+      <p class="mt-4 text-sm text-gray-400">Already have an account? <a href="#" id="show-login" class="text-green-500">Login</a></p>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-  const currentUser = localStorage.getItem('currentUser');
 
-  if (!currentUser) {
-    // If no user is logged in, redirect to login page
-    window.location.href = "login.html";
-  } else {
-    // Load the user's speech history or any user-specific data
-    loadUserHistory(currentUser);
-  }
-});
+    <!-- Login Form -->
+    <div id="login-container" class="card mb-8" style="display:none;">
+      <h2 class="text-xl font-semibold mb-4">Login</h2>
+      <input type="text" id="login-email" class="form-input" placeholder="Enter email">
+      <input type="password" id="login-password" class="form-input" placeholder="Enter password">
+      <button id="login" class="btn w-full">Login</button>
+      <p class="mt-4 text-sm text-gray-400">Don't have an account? <a href="#" id="show-register" class="text-green-500">Register</a></p>
+    </div>
 
-function loadUserHistory(user) {
-  // Your existing logic to load user-specific history
-  const history = JSON.parse(localStorage.getItem(user + '-history') || '[]');
-  const historyList = document.getElementById('history-list');
-  historyList.innerHTML = ''; // Clear existing history
+    <!-- User History -->
+    <div id="history-container" class="card mb-8" style="display:none;">
+      <h2 class="text-xl font-semibold mb-4">User History</h2>
+      <ul id="user-history-list" class="space-y-2"></ul>
+      <button id="logout" class="btn w-full">Logout</button>
+    </div>
+  </div>
 
-  history.forEach((item) => {
-    const listItem = document.createElement('li');
-    listItem.innerHTML = `
-      <span class="block font-semibold">${item.accuracy}</span>
-      <span class="text-sm text-gray-400">${item.passage}</span>
-    `;
-    historyList.appendChild(listItem);
-  });
-}
+  <script>
+    // Show login or registration form
+    document.getElementById('show-login').addEventListener('click', () => {
+      document.getElementById('register-container').style.display = 'none';
+      document.getElementById('login-container').style.display = 'block';
+    });
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const passages = [
-                "The quick brown fox jumps over the lazy dog.",
-                "To be or not to be, that is the question.",
-                "In the middle of difficulty lies opportunity.",
-                "Life is what happens when you're busy making other plans.",
-                "The only limit to our realization of tomorrow will be our doubts of today."
-            ];
-            let selectedLanguage = 'en-US';
-            const startButton = document.getElementById('start');
-            const accuracyDiv = document.getElementById('accuracy');
-            const mistakesDiv = document.getElementById('mistakes');
-            const passageTextDiv = document.getElementById('passage-text');
-            const historyList = document.getElementById('history-list');
-            const languageSelect = document.getElementById('language');
+    document.getElementById('show-register').addEventListener('click', () => {
+      document.getElementById('login-container').style.display = 'none';
+      document.getElementById('register-container').style.display = 'block';
+    });
 
-            // Set the initial passage
-            setNewPassage();
+    // Registration
+    document.getElementById('register').addEventListener('click', () => {
+      const email = document.getElementById('register-email').value;
+      const password = document.getElementById('register-password').value;
 
-            // Event listener for the start button
-            startButton.addEventListener('click', () => {
-                if (!window.SpeechRecognition) {
-                    alert("Sorry, your browser does not support speech recognition. Please use Google Chrome.");
-                    return;
-                }
-                const recognition = new window.SpeechRecognition();
-                recognition.lang = selectedLanguage;
-                recognition.interimResults = true;
+      if (email && password) {
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const userExists = users.some(user => user.email === email);
 
-                recognition.onresult = (event) => {
-                    let spokenText = "";
-                    for (let i = event.resultIndex; i < event.results.length; i++) {
-                        spokenText += event.results[i][0].transcript + " ";
-                    }
-                    updatePassageFeedback(spokenText.trim(), passageTextDiv.innerText);
-                };
+        if (!userExists) {
+          users.push({ email, password });
+          localStorage.setItem('users', JSON.stringify(users));
+          alert('Registration successful! Please login.');
+          document.getElementById('register-container').style.display = 'none';
+          document.getElementById('login-container').style.display = 'block';
+        } else {
+          alert('User already exists. Please login.');
+        }
+      } else {
+        alert('Please fill in both fields.');
+      }
+    });
 
-                recognition.onerror = (event) => {
-                    accuracyDiv.textContent = "Error recognizing speech. Please try again.";
-                };
+    // Login
 
-                recognition.onend = () => {
-                    startButton.textContent = "Start Speaking";
-                    startButton.disabled = false;
-                    addToHistory(passageTextDiv.innerText, accuracyDiv.textContent);
-                    setNewPassage();
-                };
+    document.getElementById('login').addEventListener('click', () => {
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
 
-                recognition.start();
-                startButton.textContent = "Listening...";
-                startButton.disabled = true;
-            });
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const user = users.find(user => user.email === email && user.password === password);
 
-            // Event listener for language selection
-            languageSelect.addEventListener('change', (event) => {
-                selectedLanguage = event.target.value;
-                alert(`Language changed to ${selectedLanguage}`);
-            });
+      if (user) {
+        localStorage.setItem('currentUser', email);
+        loadUserHistory(email);
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('history-container').style.display = 'block';
+        window.location.href = "index1.html";
+      } else {
+        alert('Invalid credentials!');
+      }
+    });
 
-            function setNewPassage() {
-                passageTextDiv.innerHTML = formatPassage(passages[Math.floor(Math.random() * passages.length)]);
-            }
+    // Load user history
+    function loadUserHistory(user) {
+      const history = JSON.parse(localStorage.getItem(user + '-history') || '[]');
+      const historyList = document.getElementById('user-history-list');
+      historyList.innerHTML = ''; // Clear existing history
 
-            function formatPassage(passage) {
-                return passage.split(' ').map(word => `<span class="word">${word}</span>`).join(' ');
-            }
+      history.forEach((item, index) => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="block font-semibold">${item.accuracy}</span>
+            <span class="text-sm text-gray-400">${item.passage}</span>
+            <button class="btn bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-full" onclick="deleteHistory('${user}', ${index})">Delete</button>
+          </div>
+        `;
+        historyList.appendChild(listItem);
+      });
+    }
 
-            function updatePassageFeedback(spoken, original) {
-                const spokenWords = spoken.toLowerCase().split(' ');
-                const originalWords = original.toLowerCase().split(' ');
-                const spans = document.querySelectorAll('.word');
+    // Delete history
+    function deleteHistory(user, index) {
+      let history = JSON.parse(localStorage.getItem(user + '-history') || '[]');
+      history.splice(index, 1); // Remove the selected item
+      localStorage.setItem(user + '-history', JSON.stringify(history));
+      loadUserHistory(user); // Refresh the history list
+    }
 
-                spans.forEach((span, index) => {
-                    if (index < spokenWords.length) {
-                        const spokenWord = spokenWords[index];
-                        if (spokenWord === originalWords[index]) {
-                            span.style.color = '#4ade80'; // Green for correct
-                        } else {
-                            span.style.color = '#ef4444'; // Red for incorrect
-                        }
-                    } else {
-                        span.style.color = '#ffffff'; // White for unspoken
-                    }
-                });
-
-                // Calculate accuracy
-                const correctCount = spokenWords.filter((word, index) => word === originalWords[index]).length;
-                const accuracy = ((correctCount / originalWords.length) * 100).toFixed(2);
-                accuracyDiv.textContent = `${accuracy}%`;
-            }
-
-            function addToHistory(passage, accuracy) {
-                const historyItem = document.createElement('li');
-                historyItem.innerHTML = `
-                    <span class="block font-semibold">${accuracy}</span>
-                    <span class="text-sm text-gray-400">${passage}</span>
-                `;
-                historyList.prepend(historyItem);
-
-                // Keep only the last 5 items
-                while (historyList.children.length > 5) {
-                    historyList.removeChild(historyList.lastChild);
-                }
-
-                // Store in localStorage
-                const history = JSON.parse(localStorage.getItem('introspeakHistory') || '[]');
-                history.unshift({ passage, accuracy });
-                if (history.length > 5) history.pop();
-                localStorage.setItem('introspeakHistory', JSON.stringify(history));
-            }
-
-            // Load history from localStorage
-            function loadHistory() {
-                const history = JSON.parse(localStorage.getItem('introspeakHistory') || '[]');
-                history.forEach(item => {
-                    const historyItem = document.createElement('li');
-                    historyItem.innerHTML = `
-                        <span class="block font-semibold">${item.accuracy}</span>
-                        <span class="text-sm text-gray-400">${item.passage}</span>
-                    `;
-                    historyList.appendChild(historyItem);
-                });
-            }
-
-            loadHistory();
-        });
-
-        // Ensure browser compatibility for SpeechRecognition
-        window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    </script>
+    // Logout
+    document.getElementById('logout').addEventListener('click', () => {
+      localStorage.removeItem('currentUser');
+      document.getElementById('login-container').style.display = 'block';
+      document.getElementById('history-container').style.display = 'none';
+    });
+  </script>
 </body>
 </html>

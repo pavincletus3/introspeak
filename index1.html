@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Introspeak - Speech Accuracy Checker</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .card {
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn {
+            background-color: #1db954;
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background-color: #1ed760;
+            transform: scale(1.05);
+        }
+        
+        #passage-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+        
+        #history-list li {
+            background-color: #282828;
+            margin-bottom: 0.5rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+        }
+        
+        select {
+            background-color: #282828;
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center">
+    <div class="container">
+        <div class="card mb-8">
+            <h1 class="text-3xl font-bold mb-6 text-center">Introspeak</h1>
+            <div id="passage" class="mb-6 p-4 bg-gray-800 rounded-lg">
+                <p class="text-gray-400 mb-2">Read this passage aloud:</p>
+                <div id="passage-text" class="font-semibold"></div>
+            </div>
+            <button id="start" class="btn w-full mb-4">Start Speaking</button>
+            <div id="result" class="mt-4">
+                <p class="text-gray-400">Your speech accuracy:</p>
+                <p id="accuracy" class="text-2xl font-semibold text-green-500"></p>
+            </div>
+            <div id="mistakes" class="mt-4 text-red-500"></div>
+        </div>
+        
+        <div class="card mb-8">
+            <h2 class="text-xl font-semibold mb-4">History</h2>
+            <ul id="history-list" class="space-y-2"></ul>
+        </div>
+        
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4">Settings</h2>
+            <div class="flex items-center">
+                <label for="language" class="mr-4">Select Language:</label>
+                <select id="language" class="flex-grow">
+                    <option value="en-US">English (US)</option>
+                    <option value="es-ES">Spanish (ES)</option>
+                    <option value="fr-FR">French (FR)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+  const currentUser = localStorage.getItem('currentUser');
+
+  if (!currentUser) {
+    // If no user is logged in, redirect to login page
+    window.location.href = "index.html";
+  } else {
+    // Load the user's speech history or any user-specific data
+    loadUserHistory(currentUser);
+  }
+});
+
+function loadUserHistory(user) {
+  // Your existing c to load user-specific history
+  const history = JSON.parse(localStorage.getItem(user + '-history') || '[]');
+  const historyList = document.getElementById('history-list');
+  historyList.innerHTML = ''; // Clear existing history
+
+  history.forEach((item) => {
+    const listItem = document.createElement('li');
+    listItem.innerHTML = `
+      <span class="block font-semibold">${item.accuracy}</span>
+      <span class="text-sm text-gray-400">${item.passage}</span>
+    `;
+    historyList.appendChild(listItem);
+  });
+}
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const passages = [
+                "The quick brown fox jumps over the lazy dog.",
+                "To be or not to be, that is the question.",
+                "In the middle of difficulty lies opportunity.",
+                "Life is what happens when you're busy making other plans.",
+                "The only limit to our realization of tomorrow will be our doubts of today."
+            ];
+            let selectedLanguage = 'en-US';
+            const startButton = document.getElementById('start');
+            const accuracyDiv = document.getElementById('accuracy');
+            const mistakesDiv = document.getElementById('mistakes');
+            const passageTextDiv = document.getElementById('passage-text');
+            const historyList = document.getElementById('history-list');
+            const languageSelect = document.getElementById('language');
+
+            // Set the initial passage
+            setNewPassage();
+
+            // Event listener for the start button
+            startButton.addEventListener('click', () => {
+                if (!window.SpeechRecognition) {
+                    alert("Sorry, your browser does not support speech recognition. Please use Google Chrome.");
+                    return;
+                }
+                const recognition = new window.SpeechRecognition();
+                recognition.lang = selectedLanguage;
+                recognition.interimResults = true;
+
+                recognition.onresult = (event) => {
+                    let spokenText = "";
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        spokenText += event.results[i][0].transcript + " ";
+                    }
+                    updatePassageFeedback(spokenText.trim(), passageTextDiv.innerText);
+                };
+
+                recognition.onerror = (event) => {
+                    accuracyDiv.textContent = "Error recognizing speech. Please try again.";
+                };
+
+                recognition.onend = () => {
+                    startButton.textContent = "Start Speaking";
+                    startButton.disabled = false;
+                    addToHistory(passageTextDiv.innerText, accuracyDiv.textContent);
+                    setNewPassage();
+                };
+
+                recognition.start();
+                startButton.textContent = "Listening...";
+                startButton.disabled = true;
+            });
+
+            // Event listener for language selection
+            languageSelect.addEventListener('change', (event) => {
+                selectedLanguage = event.target.value;
+                alert(`Language changed to ${selectedLanguage}`);
+            });
+
+            function setNewPassage() {
+                passageTextDiv.innerHTML = formatPassage(passages[Math.floor(Math.random() * passages.length)]);
+            }
+
+            function formatPassage(passage) {
+                return passage.split(' ').map(word => `<span class="word">${word}</span>`).join(' ');
+            }
+
+            function updatePassageFeedback(spoken, original) {
+                const spokenWords = spoken.toLowerCase().split(' ');
+                const originalWords = original.toLowerCase().split(' ');
+                const spans = document.querySelectorAll('.word');
+
+                spans.forEach((span, index) => {
+                    if (index < spokenWords.length) {
+                        const spokenWord = spokenWords[index];
+                        if (spokenWord === originalWords[index]) {
+                            span.style.color = '#4ade80'; // Green for correct
+                        } else {
+                            span.style.color = '#ef4444'; // Red for incorrect
+                        }
+                    } else {
+                        span.style.color = '#ffffff'; // White for unspoken
+                    }
+                });
+
+                // Calculate accuracy
+                const correctCount = spokenWords.filter((word, index) => word === originalWords[index]).length;
+                const accuracy = ((correctCount / originalWords.length) * 100).toFixed(2);
+                accuracyDiv.textContent = `${accuracy}%`;
+            }
+
+            function addToHistory(passage, accuracy) {
+                const historyItem = document.createElement('li');
+                historyItem.innerHTML = `
+                    <span class="block font-semibold">${accuracy}</span>
+                    <span class="text-sm text-gray-400">${passage}</span>
+                `;
+                historyList.prepend(historyItem);
+
+                // Keep only the last 5 items
+                while (historyList.children.length > 5) {
+                    historyList.removeChild(historyList.lastChild);
+                }
+
+                // Store in localStorage
+                const history = JSON.parse(localStorage.getItem('introspeakHistory') || '[]');
+                history.unshift({ passage, accuracy });
+                if (history.length > 5) history.pop();
+                localStorage.setItem('introspeakHistory', JSON.stringify(history));
+            }
+
+            // Load history from localStorage
+            function loadHistory() {
+                const history = JSON.parse(localStorage.getItem('introspeakHistory') || '[]');
+                history.forEach(item => {
+                    const historyItem = document.createElement('li');
+                    historyItem.innerHTML = `
+                        <span class="block font-semibold">${item.accuracy}</span>
+                        <span class="text-sm text-gray-400">${item.passage}</span>
+                    `;
+                    historyList.appendChild(historyItem);
+                });
+            }
+
+            loadHistory();
+        });
+
+        // Ensure browser compatibility for SpeechRecognition
+        window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    </script>
+</body>
+</html>
