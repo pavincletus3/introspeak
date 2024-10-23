@@ -234,6 +234,10 @@ function loadUserHistory(user) {
                 if (history.length > 5) history.pop();
                 localStorage.setItem('introspeakHistory', JSON.stringify(history));
             }
+            if (!isLoggedIn) {
+        window.location.href = '/login'; // Redirect to login page
+        }       
+
 
             // Load history from localStorage
             function loadHistory() {
@@ -250,6 +254,7 @@ function loadUserHistory(user) {
 
             loadHistory();
         });
+        
 
         // Ensure browser compatibility for SpeechRecognition
         window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
