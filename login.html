@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Introspeak - Speech Accuracy Checker</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .card {
+      background-color: #1e1e1e;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .btn {
+      background-color: #1db954;
+      color: white;
+      font-weight: 600;
+      padding: 0.75rem 1.5rem;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+    }
+    .btn:hover {
+      background-color: #1ed760;
+      transform: scale(1.05);
+    }
+    .form-input {
+      background-color: #282828;
+      color: white;
+      padding: 0.75rem;
+      border-radius: 8px;
+      width: 100%;
+      margin-bottom: 1rem;
+      border: none;
+    }
+    .form-input:focus {
+      outline: none;
+      border: 2px solid #1db954;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center">
+  <div class="container">
+    <!-- Registration Form -->
+    <div id="register-container" class="card mb-8">
+      <h2 class="text-xl font-semibold mb-4">Register</h2>
+      <input type="text" id="register-email" class="form-input" placeholder="Enter email">
+      <input type="password" id="register-password" class="form-input" placeholder="Enter password">
+      <button id="register" class="btn w-full">Register</button>
+      <p class="mt-4 text-sm text-gray-400">Already have an account? <a href="#" id="show-login" class="text-green-500">Login</a></p>
+    </div>
+
+    <!-- Login Form -->
+    <div id="login-container" class="card mb-8" style="display:none;">
+      <h2 class="text-xl font-semibold mb-4">Login</h2>
+      <input type="text" id="login-email" class="form-input" placeholder="Enter email">
+      <input type="password" id="login-password" class="form-input" placeholder="Enter password">
+      <button id="login" class="btn w-full">Login</button>
+      <p class="mt-4 text-sm text-gray-400">Don't have an account? <a href="#" id="show-register" class="text-green-500">Register</a></p>
+    </div>
+
+    <!-- User History -->
+    <div id="history-container" class="card mb-8" style="display:none;">
+      <h2 class="text-xl font-semibold mb-4">User History</h2>
+      <ul id="user-history-list" class="space-y-2"></ul>
+      <button id="logout" class="btn w-full">Logout</button>
+    </div>
+  </div>
+
+  <script>
+    // Show login or registration form
+    document.getElementById('show-login').addEventListener('click', () => {
+      document.getElementById('register-container').style.display = 'none';
+      document.getElementById('login-container').style.display = 'block';
+    });
+
+    document.getElementById('show-register').addEventListener('click', () => {
+      document.getElementById('login-container').style.display = 'none';
+      document.getElementById('register-container').style.display = 'block';
+    });
+
+    // Registration
+    document.getElementById('register').addEventListener('click', () => {
+      const email = document.getElementById('register-email').value;
+      const password = document.getElementById('register-password').value;
+
+      if (email && password) {
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const userExists = users.some(user => user.email === email);
+
+        if (!userExists) {
+          users.push({ email, password });
+          localStorage.setItem('users', JSON.stringify(users));
+          alert('Registration successful! Please login.');
+          document.getElementById('register-container').style.display = 'none';
+          document.getElementById('login-container').style.display = 'block';
+        } else {
+          alert('User already exists. Please login.');
+        }
+      } else {
+        alert('Please fill in both fields.');
+      }
+    });
+
+    // Login
+
+    document.getElementById('login').addEventListener('click', () => {
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const user = users.find(user => user.email === email && user.password === password);
+
+      if (user) {
+        localStorage.setItem('currentUser', email);
+        loadUserHistory(email);
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('history-container').style.display = 'block';
+        window.location.href = "index.html";
+      } else {
+        alert('Invalid credentials!');
+      }
+    });
+
+    // Load user history
+    function loadUserHistory(user) {
+      const history = JSON.parse(localStorage.getItem(user + '-history') || '[]');
+      const historyList = document.getElementById('user-history-list');
+      historyList.innerHTML = ''; // Clear existing history
+
+      history.forEach((item, index) => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="block font-semibold">${item.accuracy}</span>
+            <span class="text-sm text-gray-400">${item.passage}</span>
+            <button class="btn bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-full" onclick="deleteHistory('${user}', ${index})">Delete</button>
+          </div>
+        `;
+        historyList.appendChild(listItem);
+      });
+    }
+
+    // Delete history
+    function deleteHistory(user, index) {
+      let history = JSON.parse(localStorage.getItem(user + '-history') || '[]');
+      history.splice(index, 1); // Remove the selected item
+      localStorage.setItem(user + '-history', JSON.stringify(history));
+      loadUserHistory(user); // Refresh the history list
+    }
+
+    // Logout
+    document.getElementById('logout').addEventListener('click', () => {
+      localStorage.removeItem('currentUser');
+      document.getElementById('login-container').style.display = 'block';
+      document.getElementById('history-container').style.display = 'none';
+    });
+  </script>
+</body>
+</html>

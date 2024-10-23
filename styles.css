@@ -1,0 +1,74 @@
+/* styles.css */
+body {
+  font-family: Arial, sans-serif;
+}
+
+/* improve my ui*/
+
+#passage-text {
+  font-size: 1.1rem;
+}
+
+#result {
+  font-size: 1.1rem;
+}
+
+#accuracy {
+  font-size: 1.1rem;
+}
+
+#history {
+  font-size: 1.1rem;
+}
+
+#settings {
+  font-size: 1.1rem;
+}
+
+#start {
+  font-size: 1.1rem;
+}
+
+#language {
+  font-size: 1.1rem;
+}
+
+#passage {
+  background-color: #f9fafb; /* light background for passage */
+  border: 1px solid #e5e7eb; /* border color */
+}
+
+button {
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #2563eb; /* darker blue on hover */
+}
+
+#mistakes {
+  font-size: 0.9rem;
+  max-width: 100%;
+}
+
+#history-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+#history-list li {
+  padding: 5px 0;
+}
+
+#history-list li:nth-child(odd) {
+  background-color: #f9fafb; /* light background for history list items */
+}
+
+#history-list li:nth-child(even) {
+  background-color: #f3f4f6; /* darker background for history list items */
+}
+
+#history-list li span {
+  font-weight: bold;
+}
+
